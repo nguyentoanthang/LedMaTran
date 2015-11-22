@@ -27,9 +27,7 @@ void loop() {
   switch(currentState) {
     case TEMPERTURE: {
       do {
-        for(uint8_t i = 0; i < 10; i ++) {
-          draw(5678 );
-        }
+          draw(5678);
       } while(currentState == TEMPERTURE);
       break;
     }
@@ -48,10 +46,7 @@ void loop() {
     }
     case GAME2: {
       do {
-        digitalWrite(13, 1);
-        delay(100);
-        digitalWrite(13, 0);
-        delay(700);
+        draw(2845);
       } while(currentState == GAME2);
       break;
     }

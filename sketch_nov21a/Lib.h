@@ -1,11 +1,10 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-
 #include "LedControl.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdint.h>
+//#include <stdint.h>
 
 #define TEMPERTURE  0x00
 #define SRF05     	0x01
