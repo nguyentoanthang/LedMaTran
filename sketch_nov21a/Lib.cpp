@@ -1,6 +1,6 @@
 #include "Lib.h"
 
-LedControl lc = LedControl(12,11,10,1);
+Led lc = Led(12,11,10,1);
 volatile uint8_t currentState;
 
 void draw(const uint8_t *frame, uint8_t numRow) {

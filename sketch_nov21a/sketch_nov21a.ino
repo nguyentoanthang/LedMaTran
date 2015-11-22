@@ -1,6 +1,6 @@
 #include "Lib.h"
 
-extern LedControl lc;
+extern Led lc;
 extern volatile uint8_t currentState;
 
 void setup() {

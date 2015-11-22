@@ -1,31 +1,5 @@
-/*
- *    LedControl.cpp - A library for controling Leds with a MAX7219/MAX7221
- *    Copyright (c) 2007 Eberhard Fahle
- * 
- *    Permission is hereby granted, free of charge, to any person
- *    obtaining a copy of this software and associated documentation
- *    files (the "Software"), to deal in the Software without
- *    restriction, including without limitation the rights to use,
- *    copy, modify, merge, publish, distribute, sublicense, and/or sell
- *    copies of the Software, and to permit persons to whom the
- *    Software is furnished to do so, subject to the following
- *    conditions:
- * 
- *    This permission notice shall be included in all copies or 
- *    substantial portions of the Software.
- * 
- *    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- *    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- *    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- *    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- *    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- *    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- *    OTHER DEALINGS IN THE SOFTWARE.
- */
- 
 
-#include "LedControl.h"
+#include "Led.h"
 
 //the opcodes for the MAX7221 and MAX7219
 #define OP_NOOP   0
@@ -43,7 +17,7 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
-LedControl::LedControl(int dataPin, int clkPin, int csPin, int numDevices) {
+Led::Led(int dataPin, int clkPin, int csPin, int numDevices) {
     SPI_MOSI=dataPin;
     SPI_CLK=clkPin;
     SPI_CS=csPin;
@@ -69,11 +43,11 @@ LedControl::LedControl(int dataPin, int clkPin, int csPin, int numDevices) {
     }
 }
 
-int LedControl::getDeviceCount() {
+int Led::getDeviceCount() {
     return maxDevices;
 }
 
-void LedControl::shutdown(int addr, bool b) {
+void Led::shutdown(int addr, bool b) {
     if(addr<0 || addr>=maxDevices)
 	return;
     if(b)
@@ -82,14 +56,14 @@ void LedControl::shutdown(int addr, bool b) {
 	spiTransfer(addr, OP_SHUTDOWN,1);
 }
 	
-void LedControl::setScanLimit(int addr, int limit) {
+void Led::setScanLimit(int addr, int limit) {
     if(addr<0 || addr>=maxDevices)
 	return;
     if(limit>=0 || limit<8)
     	spiTransfer(addr, OP_SCANLIMIT,limit);
 }
 
-void LedControl::setIntensity(int addr, int intensity) {
+void Led::setIntensity(int addr, int intensity) {
     if(addr<0 || addr>=maxDevices)
 	return;
     if(intensity>=0 || intensity<16)	
@@ -97,7 +71,7 @@ void LedControl::setIntensity(int addr, int intensity) {
     
 }
 
-void LedControl::clearDisplay(int addr) {
+void Led::clearDisplay(int addr) {
     int offset;
 
     if(addr<0 || addr>=maxDevices)
@@ -109,7 +83,7 @@ void LedControl::clearDisplay(int addr) {
     }
 }
 
-void LedControl::setLed(int addr, int row, int column, boolean state) {
+void Led::setLed(int addr, int row, int column, boolean state) {
     int offset;
     byte val=0x00;
 
@@ -128,7 +102,7 @@ void LedControl::setLed(int addr, int row, int column, boolean state) {
     spiTransfer(addr, row+1,status[offset+row]);
 }
 	
-void LedControl::setRow(int addr, int row, byte value) {
+void Led::setRow(int addr, int row, byte value) {
     int offset;
     if(addr<0 || addr>=maxDevices)
 	return;
@@ -139,7 +113,7 @@ void LedControl::setRow(int addr, int row, byte value) {
     spiTransfer(addr, row+1,status[offset+row]);
 }
     
-void LedControl::setColumn(int addr, int col, byte value) {
+void Led::setColumn(int addr, int col, byte value) {
     byte val;
 
     if(addr<0 || addr>=maxDevices)
@@ -153,45 +127,7 @@ void LedControl::setColumn(int addr, int col, byte value) {
     }
 }
 
-void LedControl::setDigit(int addr, int digit, byte value, boolean dp) {
-    int offset;
-    byte v;
-
-    if(addr<0 || addr>=maxDevices)
-	return;
-    if(digit<0 || digit>7 || value>15)
-	return;
-    offset=addr*8;
-    v=charTable[value];
-    if(dp)
-	v|=B10000000;
-    status[offset+digit]=v;
-    spiTransfer(addr, digit+1,v);
-    
-}
-
-void LedControl::setChar(int addr, int digit, char value, boolean dp) {
-    int offset;
-    byte index,v;
-
-    if(addr<0 || addr>=maxDevices)
-	return;
-    if(digit<0 || digit>7)
- 	return;
-    offset=addr*8;
-    index=(byte)value;
-    if(index >127) {
-	//no defined beyond index 127, so we use the space char
-	index=32;
-    }
-    v=charTable[index];
-    if(dp)
-	v|=B10000000;
-    status[offset+digit]=v;
-    spiTransfer(addr, digit+1,v);
-}
-
-void LedControl::spiTransfer(int addr, volatile byte opcode, volatile byte data) {
+void Led::spiTransfer(int addr, volatile byte opcode, volatile byte data) {
     //Create an array with the data to shift out
     int offset=addr*2;
     int maxbytes=maxDevices*2;

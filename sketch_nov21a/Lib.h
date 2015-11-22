@@ -1,7 +1,7 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-#include "LedControl.h"
+#include "Led.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 //#include <stdint.h>
