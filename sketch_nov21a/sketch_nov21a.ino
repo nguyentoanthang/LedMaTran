@@ -8,11 +8,8 @@ void setup() {
   EICRA |= (1 << ISC01);
   EICRA |= (0 << ISC00);
   EIMSK |= (1 << INT0);
-  //sei();
-  lc.shutdown(0,false);  // Wake up displays
-  lc.setIntensity(0,0);  // Set intensity levels
-  lc.clearDisplay(0);  // Clear Displays
-
+  sei();
+  
   pinMode(13, OUTPUT);
   pinMode(2, INPUT_PULLUP);
   pinMode(BUTTON1, INPUT_PULLUP);

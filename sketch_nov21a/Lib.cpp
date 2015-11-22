@@ -3,6 +3,12 @@
 Led lc = Led(12,11,10,1);
 volatile uint8_t currentState;
 
+void Init() {
+  lc.shutdown(0,false);  // Wake up displays
+  lc.setIntensity(0,0);  // Set intensity levels
+  lc.clearDisplay(0);  // Clear Displays
+}
+
 void draw(const uint8_t *frame, uint8_t numRow) {
   for(uint8_t i = 0; i < numRow; i++) {
       lc.setRow(0, i, frame[i]);

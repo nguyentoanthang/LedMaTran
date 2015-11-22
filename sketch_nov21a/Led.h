@@ -35,7 +35,7 @@ class Led{
      * csPin		pin for selecting the device 
      * numDevices	maximum number of devices that can be controled
      */
-    Led(int dataPin, int clkPin, int csPin, int numDevices=1);
+    Led(int dataPin, int clkPin, int csPin, int numDevices = 1);
 
     /*
      * Gets the number of devices attached to this LedControl.
@@ -108,8 +108,8 @@ class Led{
      *		corresponding Led.
      */
     void setColumn(int addr, int col, byte value);
-
-#endif	//LedControl.h
+};
+#endif	//Led.h
 
 
 
