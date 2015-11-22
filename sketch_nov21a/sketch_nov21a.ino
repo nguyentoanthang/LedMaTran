@@ -1,4 +1,6 @@
 #include "LedControl.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 #define TEMPERTURE  0x00
 #define SRF05     0x01
@@ -45,6 +47,10 @@ void draw(const uint8_t *frame, uint8_t numRow, uint8_t x, uint8_t y) {
 volatile uint8_t currentState;
 
 void setup() {
+
+  EICRA |= (1 << ISC01);
+  EIMSK |= (1 << INT0);
+  sei();
   lc.shutdown(0,false);  // Wake up displays
   lc.setIntensity(0,0);  // Set intensity levels
   lc.clearDisplay(0);  // Clear Displays
@@ -56,7 +62,6 @@ void setup() {
   pinMode(BUTTON3, INPUT_PULLUP);
   pinMode(BUTTON4, INPUT_PULLUP);
   
-  attachInterrupt(0, isr, FALLING);
 }
 
 void loop() {
@@ -106,7 +111,7 @@ void loop() {
   }
 }
 
-void isr() {
+ISR(INT0_vect) {
   delay(10);
   if(digitalRead(BUTTON1) == 0) {
     currentState++;
