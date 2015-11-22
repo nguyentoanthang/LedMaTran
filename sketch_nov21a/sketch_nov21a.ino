@@ -9,7 +9,7 @@ void setup() {
   EICRA |= (0 << ISC00);
   EIMSK |= (1 << INT0);
   sei();
-  
+  Init();
   pinMode(13, OUTPUT);
   pinMode(2, INPUT_PULLUP);
   pinMode(BUTTON1, INPUT_PULLUP);
@@ -55,6 +55,9 @@ void loop() {
         delay(90);
       } while(currentState == GRAPH);
       break;
+    }
+    case POWER_DOWN: {
+      
     }
   }
 }

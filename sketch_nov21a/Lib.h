@@ -5,12 +5,14 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 //#include <stdint.h>
+#include <avr/sleep.h>
 
 #define TEMPERTURE  0x00
 #define SRF05     	0x01
-#define GAME1   	0x02
-#define GAME2   	0x03
-#define GRAPH   	0x04
+#define GAME1   	  0x02
+#define GAME2   	  0x03
+#define GRAPH   	  0x04
+#define POWER_DOWN  0x05
 
 #define BUTTON1   	4
 #define BUTTON2   	5
