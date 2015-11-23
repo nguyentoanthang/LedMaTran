@@ -1,11 +1,10 @@
 #include "Lib.h"
 
 Led lc = Led(12,11,10,1);
-volatile uint8_t currentState;
 
 void Init() {
   lc.shutdown(0,false);  // Wake up displays
-  lc.setIntensity(0,0);  // Set intensity levels
+  lc.setIntensity(0,1);  // Set intensity levels
   lc.clearDisplay(0);  // Clear Displays
 }
 
@@ -39,4 +38,17 @@ void draw(uint16_t number) {
     newFrame[j + 5] = number1L[chuc][j] | number1R[donvi][j];
   }
   draw(newFrame, 8);
+}
+
+void dispGame(uint8_t a, uint8_t b) {
+  uint8_t frame[8];
+  for(uint8_t i = 0; i < 3; i++) {
+    frame[i] = number1L[a/10][i] | number1R[b/10][i];
+    frame[i + 5] = number1L[a%10][i] | number1R[b%10][i];
+  }
+
+  frame[3] = 0x00;
+  frame[4] = 0x00;
+  
+  draw(frame, 8);
 }

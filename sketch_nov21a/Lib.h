@@ -75,5 +75,8 @@ void draw(const uint8_t *frame, uint8_t numRow);
 void draw(const uint8_t *frame, uint8_t numRow, uint8_t x, uint8_t y);
 void draw(uint16_t number);
 void Init();
+void dispGame(uint8_t a, uint8_t b);
+void bip();
+void bip1();
 
 #endif
