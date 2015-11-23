@@ -7,6 +7,9 @@ volatile uint8_t tempArr[8];
 volatile uint8_t index;
 long a, b;
 volatile boolean isRight;
+volatile boolean isWait;
+volatile uint8_t score;
+volatile int count;
 
 void setup() {
   /* Reset Timer/Counter1 */
@@ -22,6 +25,9 @@ void setup() {
   pinMode(BUTTON3, INPUT_PULLUP);
   pinMode(BUTTON4, INPUT_PULLUP);
 
+  isWait = true;
+  count = 0;
+  score = 0;
   index = 0;
   isRight = true;
   
@@ -31,42 +37,62 @@ void setup() {
   EICRA |= (0 << ISC00);
   EIMSK |= (1 << INT0);
   sei();
-  // setup timer
+  // setup timer 1
   TCNT1 = 0;  // init timer
   TIMSK1 |= (1 << TOIE1); // enable interrupt
   TCCR1B |= (1 << CS11) | (1 << CS10); // prescale = 64
-}
+
+  // reset timer 2
+  TCCR2A = 0;
+  TCCR2B = 0;
+  TIMSK2 = 0;
+  //setup timer 2
+  
+  TCNT2 = 0;
+  TIMSK2 |= (1 << TOIE2);
+} 
 
 void loop() {
   switch(currentState) {
     case TEMPERTURE: {
       do {
-          dispGame(54, 68);
+          draw(loseIcon, 8);
       } while(currentState == TEMPERTURE);
       break;
     }
     case SRF05: {
       do {
         //digitalWrite(13, 0);
-        lc.shutdown(0, true);
+        //lc.shutdown(0, true);
       } while(currentState == SRF05);
       break;
     }
     case GAME1: {
       do {
         if(isRight) {
-          // tat timer 2
+          TCNT2 = 0;
+          TCCR2B &= ~(1 << CS22);
+          count = 0;
           a = random(100);
           b = random(100);
           dispGame((uint8_t)a, (uint8_t)b);
-          ///bip();
-          // set timer 2
-          // bat timer 2
+          //bip();
+          isWait = true;
+          score++;
+          TCCR2B |= (1 << CS22);  // prescale 64
+          while(isWait == true);
         } else {
            //bip1();
+           //EEPROM.update(0, score);
+           count = 0;
+           draw(loseIcon, 8);
+           isRight = true;
+           delay(2000);
         }
-        
       } while(currentState == GAME1);
+      isRight = true;
+      count = 0;
+      TCCR2B &= ~(1 << CS22);  // tat timer
       break;
     }
     case GAME2: {
@@ -111,12 +137,14 @@ ISR(INT0_vect) {
       currentState = TEMPERTURE;
     }
   } else if(digitalRead(BUTTON2) == 0) {
+      isWait = false;
       if(a >= b) {
         isRight = true;
       } else {
         isRight = false;
       }
   } else if(digitalRead(BUTTON3) == 0) {
+    isWait = false;
     if(b >= a) {
       isRight = true;  
     } else {
@@ -133,6 +161,9 @@ ISR(TIMER1_OVF_vect) {
 }
 
 ISR(TIMER2_OVF_vect) {
-  isRight = false;
+  if(count++ == 2000) {
+    isRight = false;
+    isWait = false;
+  }
 }
 
