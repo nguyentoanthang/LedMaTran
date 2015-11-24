@@ -5,7 +5,7 @@ extern Led lc;
 volatile uint8_t currentState;
 volatile uint8_t tempArr[8];
 volatile uint8_t index;
-uint8_t a, b;
+long a, b;
 volatile boolean isRight;
 
 void setup() {
@@ -58,7 +58,7 @@ void loop() {
           // tat timer 2
           a = random(100);
           b = random(100);
-          dispGame(a, b);
+          dispGame((uint8_t)a, (uint8_t)b);
           ///bip();
           // set timer 2
           // bat timer 2
