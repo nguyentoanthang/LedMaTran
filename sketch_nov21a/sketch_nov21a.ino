@@ -10,6 +10,9 @@ volatile boolean isRight;
 volatile boolean isWait;
 volatile uint8_t score;
 volatile int count;
+volatile boolean led13;
+volatile uint8_t tempWarning;
+volatile boolean isGame;
 
 void setup() {
   /* Reset Timer/Counter1 */
@@ -30,7 +33,9 @@ void setup() {
   score = 0;
   index = 0;
   isRight = true;
-  
+  digitalWrite(13, led13);
+  tempWarning = 37;
+  isGame = true;
   currentState = 0x00;
   
   EICRA |= (1 << ISC01);
@@ -46,8 +51,8 @@ void setup() {
   TCCR2A = 0;
   TCCR2B = 0;
   TIMSK2 = 0;
-  //setup timer 2
   
+  //setup timer 2
   TCNT2 = 0;
   TIMSK2 |= (1 << TOIE2);
 } 
@@ -68,6 +73,7 @@ void loop() {
       break;
     }
     case GAME1: {
+      isGame = true;
       do {
         if(isRight) {
           TCNT2 = 0;
@@ -101,18 +107,17 @@ void loop() {
       } while(currentState == GAME2);
       break;
     }
-    case GRAPH: {
+    case SETTING: {
+      isGame = false;
       do {
-        digitalWrite(13, 1);
-        delay(90);
-        digitalWrite(13, 0);
-        delay(90);
-      } while(currentState == GRAPH);
+        draw(tempWarning*100);
+      } while(currentState == SETTING);
+      //EEPROM.update(10, tempWarning);
       break;
     }
-    case POWER_DOWN: {
-      
-    }
+    //case POWER_DOWN: {
+      //
+    //}
   }
 }
 
@@ -133,27 +138,44 @@ ISR(INT0_vect) {
   delay(10);
   if(digitalRead(BUTTON1) == 0) {
     currentState++;
-    if(currentState > GRAPH) {
+    if(currentState > GAME2) {
       currentState = TEMPERTURE;
     }
+    while(digitalRead(BUTTON1) == 0);
   } else if(digitalRead(BUTTON2) == 0) {
-      isWait = false;
-      if(a >= b) {
-        isRight = true;
+      if(isGame) {
+          isWait = false;
+        if(a >= b) {
+          isRight = true;
+        } else {
+          isRight = false;
+        }
+      } else {
+        tempWarning++;
+      }
+      while(digitalRead(BUTTON2) == 0);
+  } else if(digitalRead(BUTTON3) == 0) {
+    if(isGame) {
+        isWait = false;
+      if(b >= a) {
+        isRight = true;  
       } else {
         isRight = false;
       }
-  } else if(digitalRead(BUTTON3) == 0) {
-    isWait = false;
-    if(b >= a) {
-      isRight = true;  
     } else {
-      isRight = false;
+      tempWarning--;
     }
+    while(digitalRead(BUTTON3) == 0);
   } else {
-    
+    delay(700);
+    if(digitalRead(BUTTON4) == 0) {
+      digitalWrite(13, led13 = !led13);
+    } else {
+      currentState = SETTING;
+    }
+    while(digitalRead(BUTTON4) == 0);
   }
-  while(digitalRead(BUTTON1) == 0);
+  
 }
 
 ISR(TIMER1_OVF_vect) {

@@ -11,8 +11,8 @@
 #define SRF05     	0x01
 #define GAME1   	  0x02
 #define GAME2   	  0x03
-#define GRAPH   	  0x04
-#define POWER_DOWN  0x05
+#define SETTING     0x04
+//#define POWER_DOWN  0x04
 
 #define BUTTON1   	4
 #define BUTTON2   	5
