@@ -19,7 +19,7 @@ void setup() {
   TCCR1A = 0;
   TCCR1B = 0;
   TIMSK1 = 0;
-
+  Serial.begin(9600);
   Init();
   pinMode(13, OUTPUT);
   pinMode(2, INPUT_PULLUP);
@@ -37,15 +37,14 @@ void setup() {
   tempWarning = 37;
   isGame = true;
   currentState = 0x00;
-  
+  // setup extern interrupt
   EICRA |= (1 << ISC01);
-  EICRA |= (0 << ISC00);
   EIMSK |= (1 << INT0);
   sei();
   // setup timer 1
   TCNT1 = 0;  // init timer
   TIMSK1 |= (1 << TOIE1); // enable interrupt
-  TCCR1B |= (1 << CS11) | (1 << CS10); // prescale = 64
+  //TCCR1B |= (1 << CS11) | (1 << CS10); // prescale = 64
 
   // reset timer 2
   TCCR2A = 0;
@@ -61,7 +60,7 @@ void loop() {
   switch(currentState) {
     case TEMPERTURE: {
       do {
-          draw(loseIcon, 8);
+          draw(5464);
       } while(currentState == TEMPERTURE);
       break;
     }
@@ -69,6 +68,7 @@ void loop() {
       do {
         //digitalWrite(13, 0);
         //lc.shutdown(0, true);
+        draw(EEPROM.read(10)*100);
       } while(currentState == SRF05);
       break;
     }
@@ -110,9 +110,10 @@ void loop() {
     case SETTING: {
       isGame = false;
       do {
+        tempWarning = EEPROM.read(10);
         draw(tempWarning*100);
       } while(currentState == SETTING);
-      //EEPROM.update(10, tempWarning);
+      EEPROM.update(10, tempWarning);
       break;
     }
     //case POWER_DOWN: {
@@ -128,8 +129,6 @@ void calculateTemp() {
   
   if(index == 8) {
     index = 0;
-  } else {
-    index++;
   }
 
 }
@@ -166,13 +165,10 @@ ISR(INT0_vect) {
       tempWarning--;
     }
     while(digitalRead(BUTTON3) == 0);
-  } else {
-    delay(700);
-    if(digitalRead(BUTTON4) == 0) {
-      digitalWrite(13, led13 = !led13);
-    } else {
-      currentState = SETTING;
-    }
+  } else if(digitalRead(BUTTON4) == 0){
+    Serial.println("onBUTTON4");
+    currentState = SETTING;
+    Serial.println("vear");
     while(digitalRead(BUTTON4) == 0);
   }
   
