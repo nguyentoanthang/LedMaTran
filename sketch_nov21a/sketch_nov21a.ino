@@ -3,16 +3,20 @@
 
 extern Led lc;
 volatile uint8_t currentState;
-volatile uint8_t tempArr[8];
+volatile int currentTemp;
 volatile uint8_t index;
 long a, b;
 volatile boolean isRight;
 volatile boolean isWait;
 volatile uint8_t score;
 volatile int count;
+volatile int countTemp;
 volatile boolean led13;
 volatile uint8_t tempWarning;
 volatile boolean isGame;
+uint16_t temp;
+unsigned long times;
+uint16_t distance;
 
 void setup() {
   /* Reset Timer/Counter1 */
@@ -23,11 +27,15 @@ void setup() {
   Init();
   pinMode(13, OUTPUT);
   pinMode(2, INPUT_PULLUP);
+  pinMode(9, INPUT);
+  pinMode(8, OUTPUT);
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
   pinMode(BUTTON3, INPUT_PULLUP);
   pinMode(BUTTON4, INPUT_PULLUP);
 
+  temp = 0;
+  countTemp = 0;
   isWait = true;
   count = 0;
   score = 0;
@@ -44,7 +52,7 @@ void setup() {
   // setup timer 1
   TCNT1 = 0;  // init timer
   TIMSK1 |= (1 << TOIE1); // enable interrupt
-  //TCCR1B |= (1 << CS11) | (1 << CS10); // prescale = 64
+  TCCR1B |= (1 << CS11) | (1 << CS10); // prescale = 64
 
   // reset timer 2
   TCCR2A = 0;
@@ -60,15 +68,14 @@ void loop() {
   switch(currentState) {
     case TEMPERTURE: {
       do {
-          draw(5464);
+          temp = (uint16_t)(round(currentTemp*5.0*10000.0/1024.0));
+          draw(temp);
       } while(currentState == TEMPERTURE);
       break;
     }
     case SRF05: {
       do {
-        //digitalWrite(13, 0);
-        //lc.shutdown(0, true);
-        draw(EEPROM.read(10)*100);
+        draw(3743);
       } while(currentState == SRF05);
       break;
     }
@@ -109,8 +116,8 @@ void loop() {
     }
     case SETTING: {
       isGame = false;
+      tempWarning = EEPROM.read(10);
       do {
-        tempWarning = EEPROM.read(10);
         draw(tempWarning*100);
       } while(currentState == SETTING);
       EEPROM.update(10, tempWarning);
@@ -120,17 +127,6 @@ void loop() {
       //
     //}
   }
-}
-
-void calculateTemp() {  
-  uint8_t currentTemp = analogRead(A0)/4;
-
-  tempArr[index] = currentTemp;
-  
-  if(index == 8) {
-    index = 0;
-  }
-
 }
 
 ISR(INT0_vect) {
@@ -166,16 +162,17 @@ ISR(INT0_vect) {
     }
     while(digitalRead(BUTTON3) == 0);
   } else if(digitalRead(BUTTON4) == 0){
-    Serial.println("onBUTTON4");
     currentState = SETTING;
-    Serial.println("vear");
     while(digitalRead(BUTTON4) == 0);
   }
   
 }
 
 ISR(TIMER1_OVF_vect) {
-  //calculateTemp();
+  if(countTemp++ == 10) {
+    currentTemp = analogRead(A0);
+    countTemp = 0;
+  }
 }
 
 ISR(TIMER2_OVF_vect) {

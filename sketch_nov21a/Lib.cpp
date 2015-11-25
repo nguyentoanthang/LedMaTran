@@ -1,6 +1,6 @@
 #include "Lib.h"
 
-Led lc = Led(12,11,10,1);
+Led lc = Led(10,12,11,1);
 
 void Init() {
   lc.shutdown(0,false);  // Wake up displays
