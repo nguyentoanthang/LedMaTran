@@ -36,7 +36,7 @@ void setup() {
   pinMode(BUTTON3, INPUT_PULLUP);
   pinMode(BUTTON4, INPUT_PULLUP);
 
-  EEPROM.write(11, 0);
+  led13 = 0;
   highscore = EEPROM.read(11);
   isEnable = false;
   temp = 0;
@@ -47,7 +47,6 @@ void setup() {
   index = 0;
   isRight = true;
   digitalWrite(13, led13);
-  tempWarning = 37;
   isGame = true;
   currentState = 0x00;
   // setup extern interrupt
@@ -103,6 +102,7 @@ void loop() {
           TCCR2B |= (1 << CS22);  // prescale 64, bat timer 2
           while(isWait == true);
         } else {
+          TCCR2B &= ~(1 << CS22);
            //bip1();
            //EEPROM.update(0, score);
            count = 0;
@@ -117,10 +117,16 @@ void loop() {
               lc.shutdown(0, true);
               delay(300);
               lc.shutdown(0, false);
+              delay(300);
+              lc.shutdown(0, true);
+              delay(300);
+              lc.shutdown(0, false);
               highscore = score;
               EEPROM.write(11, highscore);
+              score = 0;
            } else {
             draw(loseIcon, 8);
+            score = 0;
            }
            delay(2000);
         }
@@ -134,7 +140,7 @@ void loop() {
     case GAME2: {
       isEnable = false;
       do {
-        draw(2845);
+        draw(highscore*100);
       } while(currentState == GAME2);
       break;
     }
@@ -144,13 +150,11 @@ void loop() {
       tempWarning = EEPROM.read(10);
       do {
         draw(tempWarning*100);
-      } while(currentState == SETTING);
-      EEPROM.update(10, tempWarning);
+      } while(currentState == SETTING);   
       break;
     }
     case WARNING: {
       do {
-        lc.setIntensity(0,15);
         uint8_t frame[8] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
         draw(frame, 8);
         //bip();
@@ -179,6 +183,7 @@ ISR(INT0_vect) {
           }
         } else {
           tempWarning++;
+          EEPROM.update(10, tempWarning);
         }
       }
       while(digitalRead(BUTTON2) == 0);
@@ -193,11 +198,17 @@ ISR(INT0_vect) {
           }
         } else {
         tempWarning--;
+        EEPROM.update(10, tempWarning);
       }
     }
     while(digitalRead(BUTTON3) == 0);
   } else if(digitalRead(BUTTON4) == 0){
-    currentState = SETTING;
+    if(currentState == SETTING) {
+      digitalWrite(13, led13 = !led13);
+      currentState = TEMPERTURE;
+    } else {
+      currentState = SETTING;
+    }
     while(digitalRead(BUTTON4) == 0);
   }
   
