@@ -12,6 +12,7 @@
 #define GAME1   	  0x02
 #define GAME2   	  0x03
 #define SETTING     0x04
+#define WARNING     0x05
 //#define POWER_DOWN  0x04
 
 #define BUTTON1   	4

@@ -14,9 +14,11 @@ volatile int countTemp;
 volatile boolean led13;
 volatile uint8_t tempWarning;
 volatile boolean isGame;
+volatile boolean isEnable;
 uint16_t temp;
 unsigned long times;
 uint16_t distance;
+uint8_t highscore;
 
 void setup() {
   /* Reset Timer/Counter1 */
@@ -34,6 +36,9 @@ void setup() {
   pinMode(BUTTON3, INPUT_PULLUP);
   pinMode(BUTTON4, INPUT_PULLUP);
 
+  EEPROM.write(11, 0);
+  highscore = EEPROM.read(11);
+  isEnable = false;
   temp = 0;
   countTemp = 0;
   isWait = true;
@@ -67,6 +72,7 @@ void setup() {
 void loop() {
   switch(currentState) {
     case TEMPERTURE: {
+      isEnable = false;
       do {
           temp = (uint16_t)(round(currentTemp*5.0*10000.0/1024.0));
           draw(temp);
@@ -81,10 +87,12 @@ void loop() {
     }
     case GAME1: {
       isGame = true;
+      isEnable = true;
+      score = 0;
       do {
         if(isRight) {
           TCNT2 = 0;
-          TCCR2B &= ~(1 << CS22);
+          TCCR2B &= ~(1 << CS22);   // tat timer 2
           count = 0;
           a = random(100);
           b = random(100);
@@ -92,29 +100,46 @@ void loop() {
           //bip();
           isWait = true;
           score++;
-          TCCR2B |= (1 << CS22);  // prescale 64
+          TCCR2B |= (1 << CS22);  // prescale 64, bat timer 2
           while(isWait == true);
         } else {
            //bip1();
            //EEPROM.update(0, score);
            count = 0;
-           draw(loseIcon, 8);
            isRight = true;
+           if(score > highscore) {
+              draw(score*100);
+              delay(300);
+              lc.shutdown(0, true);
+              delay(300);
+              lc.shutdown(0, false);
+              delay(300);
+              lc.shutdown(0, true);
+              delay(300);
+              lc.shutdown(0, false);
+              highscore = score;
+              EEPROM.write(11, highscore);
+           } else {
+            draw(loseIcon, 8);
+           }
            delay(2000);
         }
       } while(currentState == GAME1);
       isRight = true;
       count = 0;
-      TCCR2B &= ~(1 << CS22);  // tat timer
+      TCCR2B &= ~(1 << CS22);  // tat timer 2
+      
       break;
     }
     case GAME2: {
+      isEnable = false;
       do {
         draw(2845);
       } while(currentState == GAME2);
       break;
     }
     case SETTING: {
+      isEnable = true;
       isGame = false;
       tempWarning = EEPROM.read(10);
       do {
@@ -123,9 +148,15 @@ void loop() {
       EEPROM.update(10, tempWarning);
       break;
     }
-    //case POWER_DOWN: {
-      //
-    //}
+    case WARNING: {
+      do {
+        lc.setIntensity(0,15);
+        uint8_t frame[8] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+        draw(frame, 8);
+        //bip();
+      } while(currentState == WARNING);
+    }
+    break;
   }
 }
 
@@ -138,27 +169,31 @@ ISR(INT0_vect) {
     }
     while(digitalRead(BUTTON1) == 0);
   } else if(digitalRead(BUTTON2) == 0) {
-      if(isGame) {
+      if(isEnable) {
+        if(isGame) {
           isWait = false;
-        if(a >= b) {
-          isRight = true;
+          if(a >= b) {
+            isRight = true;
+          } else {
+            isRight = false;
+          }
         } else {
-          isRight = false;
+          tempWarning++;
         }
-      } else {
-        tempWarning++;
       }
       while(digitalRead(BUTTON2) == 0);
   } else if(digitalRead(BUTTON3) == 0) {
-    if(isGame) {
-        isWait = false;
-      if(b >= a) {
-        isRight = true;  
-      } else {
-        isRight = false;
+    if(isEnable) {
+        if(isGame) {
+          isWait = false;
+          if(b >= a) {
+            isRight = true;  
+          } else {
+            isRight = false;
+          }
+        } else {
+        tempWarning--;
       }
-    } else {
-      tempWarning--;
     }
     while(digitalRead(BUTTON3) == 0);
   } else if(digitalRead(BUTTON4) == 0){
@@ -172,6 +207,10 @@ ISR(TIMER1_OVF_vect) {
   if(countTemp++ == 10) {
     currentTemp = analogRead(A0);
     countTemp = 0;
+    tempWarning = EEPROM.read(10);
+    if(tempWarning*2.048 < currentTemp) {
+      currentState = WARNING;
+    }
   }
 }
 
