@@ -52,3 +52,20 @@ void dispGame(uint8_t a, uint8_t b) {
   
   draw(frame, 8);
 }
+
+void disp(uint8_t c, uint8_t d) {
+  uint8_t frame[8];
+
+  frame[0] = 0x00;
+  frame[1] = 0x00;
+  frame[2] = 0x00;
+  frame[3] = 0x00;
+  frame[4] = 0x00;
+
+  for(uint8_t i = 0; i < 3; i++) {
+    frame[i + 5] = number1L[c][i] | number1R[d][i];
+  }
+
+  draw(frame, 8);
+}
+

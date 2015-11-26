@@ -90,5 +90,6 @@ void Init();
 void dispGame(uint8_t a, uint8_t b);
 void bip();
 void bip1();
+void disp(uint8_t c, uint8_t d);
 
 #endif

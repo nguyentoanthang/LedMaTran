@@ -6,6 +6,7 @@ volatile uint8_t currentState;
 volatile int currentTemp;
 volatile uint8_t index;
 long a, b;
+uint8_t c, d;
 volatile boolean isRight;
 volatile boolean isWait;
 volatile uint8_t score;
@@ -15,6 +16,7 @@ volatile boolean led13;
 volatile uint8_t tempWarning;
 volatile boolean isGame;
 volatile boolean isEnable;
+volatile boolean isDoxingau;
 uint16_t temp;
 unsigned long times;
 uint16_t distance;
@@ -80,7 +82,18 @@ void loop() {
     }
     case SRF05: {
       do {
-        draw(3743);
+          if(isDoxingau) {
+            for(uint8_t i = 1; i < 10; i++) {
+              c = random(7);
+              d = random(7);
+              disp(c, d);
+              delay(i*200);
+              isDoxingau = false;
+            }
+          } else {
+            while(isDoxingau == false);
+          }
+          
       } while(currentState == SRF05);
       break;
     }
@@ -203,9 +216,8 @@ ISR(INT0_vect) {
     }
     while(digitalRead(BUTTON3) == 0);
   } else if(digitalRead(BUTTON4) == 0){
-    if(currentState == SETTING) {
-      digitalWrite(13, led13 = !led13);
-      currentState = TEMPERTURE;
+    if(currentState == SRF05) {
+      isDoxingau == true;
     } else {
       currentState = SETTING;
     }
