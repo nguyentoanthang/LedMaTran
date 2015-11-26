@@ -39,6 +39,7 @@ void setup() {
   pinMode(BUTTON4, INPUT_PULLUP);
 
   led13 = 0;
+  isDoxingau = false;
   highscore = EEPROM.read(11);
   isEnable = false;
   temp = 0;
@@ -75,25 +76,25 @@ void loop() {
     case TEMPERTURE: {
       isEnable = false;
       do {
-          temp = (uint16_t)(round(currentTemp*5.0*10000.0/1024.0));
-          draw(temp);
+          //temp = (uint16_t)(round(currentTemp*5.0*10000.0/1024.0));
+          //draw(temp);
+          disp(4, 5);
       } while(currentState == TEMPERTURE);
       break;
     }
     case SRF05: {
+      isEnable = false;
+      lc.clearDisplay(0);
       do {
           if(isDoxingau) {
-            for(uint8_t i = 1; i < 10; i++) {
-              c = random(7);
-              d = random(7);
+            for(uint8_t i = 1; i < 20; i++) {
+              c = random(6) + 1;
+              d = random(6) + 1;
               disp(c, d);
-              delay(i*200);
-              isDoxingau = false;
+              delay(i*30);          
             }
-          } else {
-            while(isDoxingau == false);
+            isDoxingau = false;
           }
-          
       } while(currentState == SRF05);
       break;
     }
@@ -178,7 +179,7 @@ void loop() {
 }
 
 ISR(INT0_vect) {
-  delay(10);
+  delay(15);
   if(digitalRead(BUTTON1) == 0) {
     currentState++;
     if(currentState > GAME2) {
@@ -217,7 +218,7 @@ ISR(INT0_vect) {
     while(digitalRead(BUTTON3) == 0);
   } else if(digitalRead(BUTTON4) == 0){
     if(currentState == SRF05) {
-      isDoxingau == true;
+      isDoxingau = true;
     } else {
       currentState = SETTING;
     }

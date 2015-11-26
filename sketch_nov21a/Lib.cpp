@@ -4,7 +4,7 @@ Led lc = Led(10,12,11,1);
 
 void Init() {
   lc.shutdown(0,false);  // Wake up displays
-  lc.setIntensity(0,2);  // Set intensity levels
+  lc.setIntensity(0,0);  // Set intensity levels
   lc.clearDisplay(0);  // Clear Displays
 }
 
