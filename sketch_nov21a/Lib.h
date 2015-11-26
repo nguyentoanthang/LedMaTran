@@ -18,7 +18,7 @@
 #define BUTTON1   	4
 #define BUTTON2   	5
 #define BUTTON3   	6
-#define BUTTON4   	7
+#define BUTTON4   	9
 
 const uint8_t loseIcon[8] = {
   B00000000,
